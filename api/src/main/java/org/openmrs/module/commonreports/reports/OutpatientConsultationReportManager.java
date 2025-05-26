@@ -1,18 +1,10 @@
 package org.openmrs.module.commonreports.reports;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.openmrs.Concept;
 import org.openmrs.Location;
 import org.openmrs.module.commonreports.ActivatedReportManager;
 import org.openmrs.module.commonreports.CommonReportsConstants;
 import org.openmrs.module.commonreports.renderer.CohortCrossTabDataSetCsvReportRenderer;
-import org.openmrs.module.commonreports.renderer.PatientHistoryXmlReportRenderer;
 import org.openmrs.module.initializer.api.InitializerService;
 import org.openmrs.module.reporting.cohort.definition.AgeCohortDefinition;
 import org.openmrs.module.reporting.cohort.definition.CodedObsCohortDefinition;
@@ -26,9 +18,10 @@ import org.openmrs.module.reporting.evaluation.parameter.Mapped;
 import org.openmrs.module.reporting.evaluation.parameter.Parameter;
 import org.openmrs.module.reporting.report.ReportDesign;
 import org.openmrs.module.reporting.report.definition.ReportDefinition;
-import org.openmrs.module.reporting.report.manager.ReportManagerUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.*;
 
 @Component(CommonReportsConstants.COMPONENT_REPORTMANAGER_OPDCONSULT)
 public class OutpatientConsultationReportManager extends ActivatedReportManager {
