@@ -1,13 +1,5 @@
 package org.openmrs.module.commonreports.reports;
 
-import static org.openmrs.module.commonreports.common.Helper.getStringFromResource;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.openmrs.module.commonreports.ActivatedReportManager;
 import org.openmrs.module.initializer.api.InitializerService;
 import org.openmrs.module.reporting.common.DateUtil;
@@ -20,15 +12,20 @@ import org.openmrs.module.reporting.report.manager.ReportManagerUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.text.SimpleDateFormat;
+import java.util.*;
+
+import static org.openmrs.module.commonreports.common.Helper.getStringFromResource;
+
 @Component
-public class AppointmentsReportManager extends ActivatedReportManager {
+public class QuotevsInvoiceReportManager extends ActivatedReportManager {
 	
 	@Autowired
 	private InitializerService inizService;
 	
 	@Override
 	public boolean isActivated() {
-		return inizService.getBooleanFromKey("report.appointments.active", true);
+		return inizService.getBooleanFromKey("report.Quotations.active", true);
 	}
 	
 	@Override
@@ -38,28 +35,35 @@ public class AppointmentsReportManager extends ActivatedReportManager {
 	
 	@Override
 	public String getUuid() {
-		return "d888fa26-ae86-4496-95d3-65f747221204";
+		return "5a26f3fb-3539-4413-b9e7-3139bda08481";
 	}
 	
 	@Override
 	public String getName() {
-		return MessageUtil.translate("commonreports.report.appointments.reportName");
+		return MessageUtil.translate("commonreports.report.quotations.reportName");
 	}
 	
 	@Override
 	public String getDescription() {
-		return MessageUtil.translate("commonreports.report.appointments.reportDescription");
+		return MessageUtil.translate("commonreports.report.quotations.reportDescription");
 	}
 	
-	private Parameter getStartDateParameter() {
-		return new Parameter("startDateTime", "Start Date Time", Date.class, null,
-		        DateUtil.parseDate("1970-01-01", "yyyy-MM-dd"));
+	private Parameter getFromParameter() {
+		String today = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+		return new Parameter("fromDate", "From Date", Date.class, null, DateUtil.parseDate(today, "yyyy-MM-dd"));
+	}
+	
+	private Parameter getToParameter() {
+		String today = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+		return new Parameter("toDate", "To Date", Date.class, null, DateUtil.parseDate(today, "yyyy-MM-dd"));
 	}
 	
 	@Override
 	public List<Parameter> getParameters() {
-		List<Parameter> params = new ArrayList<Parameter>();
-		params.add(getStartDateParameter());
+		List<Parameter> params = new ArrayList<>();
+		params.add(getFromParameter());
+		params.add(getToParameter());
+		
 		return params;
 	}
 	
@@ -74,25 +78,24 @@ public class AppointmentsReportManager extends ActivatedReportManager {
 		rd.setUuid(getUuid());
 		
 		SqlDataSetDefinition sqlDsd = new SqlDataSetDefinition();
-		sqlDsd.setName(MessageUtil.translate("commonreports.report.appointments.datasetName"));
-		sqlDsd.setDescription(MessageUtil.translate("commonreports.report.appointments.datasetDescription"));
+		sqlDsd.setName(MessageUtil.translate("commonreports.report.quotations.datasetName"));
+		sqlDsd.setDescription(MessageUtil.translate("commonreports.report.quotations.datasetDescription"));
 		
-		String sql = getStringFromResource("org/openmrs/module/commonreports/sql/ScheduledAppointments.sql");
+		String sql = getStringFromResource("org/openmrs/module/commonreports/sql/quotationsVsInvoiceReport.sql");
 		
 		sqlDsd.setSqlQuery(sql);
 		sqlDsd.addParameters(getParameters());
 		
-		Map<String, Object> parameterMappings = new HashMap<String, Object>();
-		parameterMappings.put("startDateTime", "${startDateTime}");
-		
+		Map<String, Object> parameterMappings = new HashMap<>();
+		parameterMappings.put("fromDate", "${fromDate}");
+		parameterMappings.put("toDate", "${toDate}");
 		rd.addDataSetDefinition(getName(), sqlDsd, parameterMappings);
-		
 		return rd;
 	}
 	
 	@Override
 	public List<ReportDesign> constructReportDesigns(ReportDefinition reportDefinition) {
-		ReportDesign reportDesign = ReportManagerUtil.createCsvReportDesign("989b07a4-f532-4b82-8b56-3d3042fd9037",
+		ReportDesign reportDesign = ReportManagerUtil.createCsvReportDesign("bcfd2782-61ac-49b4-b917-6b57ed5993fc",
 		    reportDefinition);
 		return Arrays.asList(reportDesign);
 	}

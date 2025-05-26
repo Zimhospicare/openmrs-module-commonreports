@@ -1,6 +1,11 @@
 # "Common Reports" OpenMRS module
 Common Reports bundles reports defined and evaluated by the [OpenMRS Reporting module](https://github.com/openmrs/openmrs-module-reporting).
 
+
+## Package module
+
+`mvn clean install -DskipTests -DaltDeploymentRepository=mks-nexus::default::https://nexus.mekomsolutions.net/repository/maven-snapshots`
+
 It bundles two groups of reports:
 1. **All-use reports** that are activated by default or
 1. **Use-case specific reports** that need to be explicitely activated through Initializer's ['jsonkeyvalues'](https://github.com/mekomsolutions/openmrs-module-initializer/blob/master/readme/jsonkeyvalues.md#domain-jsonkeyvalues).<br/>:warning: Common Reports holds a hard dependency on Initializer ⇒ both modules need to be installed for Common Reports to work properly.

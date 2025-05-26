@@ -1,12 +1,8 @@
 package org.openmrs.module.commonreports.reports;
 
-import static org.openmrs.module.commonreports.common.Helper.getStringFromResource;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import org.openmrs.module.commonreports.ActivatedReportManager;
 import org.openmrs.module.initializer.api.InitializerService;
+import org.openmrs.module.reporting.common.DateUtil;
 import org.openmrs.module.reporting.common.MessageUtil;
 import org.openmrs.module.reporting.dataset.definition.SqlDataSetDefinition;
 import org.openmrs.module.reporting.evaluation.parameter.Parameter;
@@ -16,15 +12,19 @@ import org.openmrs.module.reporting.report.manager.ReportManagerUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.*;
+
+import static org.openmrs.module.commonreports.common.Helper.getStringFromResource;
+
 @Component
-public class PatientsReportManager extends ActivatedReportManager {
+public class DailyPaymentSummaryManager extends ActivatedReportManager {
 	
 	@Autowired
 	private InitializerService inizService;
 	
 	@Override
 	public boolean isActivated() {
-		return inizService.getBooleanFromKey("report.patients.active", false);
+		return inizService.getBooleanFromKey("report.daily.payment.summary.report.active", true);
 	}
 	
 	@Override
@@ -34,23 +34,27 @@ public class PatientsReportManager extends ActivatedReportManager {
 	
 	@Override
 	public String getUuid() {
-		return "a7461fe7-f943-4d4d-b2d5-66ffefd9ca3c";
+		return "527718f7-cae1-4d5d-b016-bfebf34d3dbd";
 	}
 	
 	@Override
 	public String getName() {
-		return MessageUtil.translate("commonreports.report.patients.reportName");
+		return MessageUtil.translate("commonreports.report.dailyPaymentReportSummary.reportName");
 	}
 	
 	@Override
 	public String getDescription() {
-		return MessageUtil.translate("commonreports.report.patients.reportDescription");
+		return MessageUtil.translate("commonreports.report.dailyPaymentReportSummary.reportDescription");
+	}
+	
+	private Parameter getStartDateParameter() {
+		return new Parameter("summaryDate", "Date", Date.class, null, DateUtil.parseDate("1970-01-01", "yyyy-MM-dd"));
 	}
 	
 	@Override
 	public List<Parameter> getParameters() {
 		List<Parameter> params = new ArrayList<Parameter>();
-		
+		params.add(getStartDateParameter());
 		return params;
 	}
 	
@@ -65,22 +69,25 @@ public class PatientsReportManager extends ActivatedReportManager {
 		rd.setUuid(getUuid());
 		
 		SqlDataSetDefinition sqlDsd = new SqlDataSetDefinition();
-		sqlDsd.setName(MessageUtil.translate("commonreports.report.patients.datasetName"));
-		sqlDsd.setDescription(MessageUtil.translate("commonreports.report.patients.datasetDescription"));
+		sqlDsd.setName(MessageUtil.translate("commonreports.report.dailyPaymentReportSummary.datasetName"));
+		sqlDsd.setDescription(MessageUtil.translate("commonreports.report.dailyPaymentReportSummary.datasetDescription"));
 		
-		String sql = getStringFromResource("org/openmrs/module/commonreports/sql/patients.sql");
+		String sql = getStringFromResource("org/openmrs/module/commonreports/sql/DailyPaymentSummaryReport.sql");
 		
 		sqlDsd.setSqlQuery(sql);
 		sqlDsd.addParameters(getParameters());
 		
-		rd.addDataSetDefinition(getName(), sqlDsd, null);
+		Map<String, Object> parameterMappings = new HashMap<String, Object>();
+		parameterMappings.put("summaryDate", "${summaryDate}");
+		
+		rd.addDataSetDefinition(getName(), sqlDsd, parameterMappings);
 		
 		return rd;
 	}
 	
 	@Override
 	public List<ReportDesign> constructReportDesigns(ReportDefinition reportDefinition) {
-		ReportDesign reportDesign = ReportManagerUtil.createCsvReportDesign("be80af44-ce58-489b-b015-0fd7b2409575",
+		ReportDesign reportDesign = ReportManagerUtil.createCsvReportDesign("36de8e0d-de01-4da4-8319-3f3452dda545",
 		    reportDefinition);
 		return Arrays.asList(reportDesign);
 	}

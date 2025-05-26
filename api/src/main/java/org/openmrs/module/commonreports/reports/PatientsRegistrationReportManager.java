@@ -1,15 +1,6 @@
 package org.openmrs.module.commonreports.reports;
 
-import static org.openmrs.module.commonreports.common.Helper.getStringFromResource;
-
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import org.openmrs.Location;
 import org.openmrs.Provider;
 import org.openmrs.module.commonreports.ActivatedReportManager;
 import org.openmrs.module.initializer.api.InitializerService;
@@ -23,15 +14,20 @@ import org.openmrs.module.reporting.report.manager.ReportManagerUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.text.SimpleDateFormat;
+import java.util.*;
+
+import static org.openmrs.module.commonreports.common.Helper.getStringFromResource;
+
 @Component
-public class EncountersReportManager extends ActivatedReportManager {
+public class PatientsRegistrationReportManager extends ActivatedReportManager {
 	
 	@Autowired
 	private InitializerService inizService;
 	
 	@Override
 	public boolean isActivated() {
-		return inizService.getBooleanFromKey("report.encounters.active", true);
+		return inizService.getBooleanFromKey("report.patients.registration.active", true);
 	}
 	
 	@Override
@@ -41,39 +37,49 @@ public class EncountersReportManager extends ActivatedReportManager {
 	
 	@Override
 	public String getUuid() {
-		return "320d3c2a-93d2-4bba-887b-f9cb04778dde";
+		return "9a462e4d-8b31-493e-b36e-2d2c75287a01";
 	}
 	
 	@Override
 	public String getName() {
-		return MessageUtil.translate("commonreports.report.encounters.reportName");
+		return MessageUtil.translate("commonreports.report.patients.registration.reportName");
 	}
 	
 	@Override
 	public String getDescription() {
-		return MessageUtil.translate("commonreports.report.encounters.reportDescription");
+		return MessageUtil.translate("commonreports.report.patients.registration.reportDescription");
+	}
+	
+	private Parameter getGenderParameter() {
+		return new Parameter("gender", "Gender", String.class, null, null);
 	}
 	
 	private Parameter getStartDateParameter() {
-		return new Parameter("startDate", "Start Date", Date.class, null, DateUtil.parseDate("1970-01-01", "yyyy-MM-dd"));
+		String today = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+		return new Parameter("startDate", "From", Date.class, null, DateUtil.parseDate(today, "yyyy-MM-dd"));
 	}
 	
 	private Parameter getEndDateParameter() {
 		String today = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
-		return new Parameter("endDate", "End Date", Date.class, null, DateUtil.parseDate(today, "yyyy-MM-dd"));
+		return new Parameter("endDate", "To", Date.class, null, DateUtil.parseDate(today, "yyyy-MM-dd"));
 	}
 	
-	private Parameter getEncounterProvider() {
-		return new Parameter("provider", "Select Provider", Provider.class, List.class, null);
+	private Parameter getMinAgeParameter() {
+		return new Parameter("minAge", "Min Age", Integer.class, null, null);
+	}
+	
+	private Parameter getMaxAgeParameter() {
+		return new Parameter("maxAge", "Max Age", Integer.class, null, null);
 	}
 	
 	@Override
 	public List<Parameter> getParameters() {
-		List<Parameter> params = new ArrayList<Parameter>();
+		List<Parameter> params = new ArrayList<>();
 		params.add(getStartDateParameter());
 		params.add(getEndDateParameter());
-		params.add(getEncounterProvider());
-		
+		params.add(getGenderParameter());
+		params.add(getMinAgeParameter());
+		params.add(getMaxAgeParameter());
 		return params;
 	}
 	
@@ -88,27 +94,27 @@ public class EncountersReportManager extends ActivatedReportManager {
 		rd.setUuid(getUuid());
 		
 		SqlDataSetDefinition sqlDsd = new SqlDataSetDefinition();
-		sqlDsd.setName(MessageUtil.translate("commonreports.report.encounters.datasetName"));
-		sqlDsd.setDescription(MessageUtil.translate("commonreports.report.encounters.datasetDescription"));
+		sqlDsd.setName(MessageUtil.translate("commonreports.report.patients.registration.datasetName"));
+		sqlDsd.setDescription(MessageUtil.translate("commonreports.report.patients.registration.datasetDescription"));
 		
-		String sql = getStringFromResource("org/openmrs/module/commonreports/sql/encounters.sql");
+		String sql = getStringFromResource("org/openmrs/module/commonreports/sql/patientsRegistrationReport.sql");
 		
 		sqlDsd.setSqlQuery(sql);
 		sqlDsd.addParameters(getParameters());
 		
-		Map<String, Object> parameterMappings = new HashMap<String, Object>();
+		Map<String, Object> parameterMappings = new HashMap<>();
 		parameterMappings.put("startDate", "${startDate}");
 		parameterMappings.put("endDate", "${endDate}");
-		parameterMappings.put("provider", "${provider}");
-		
+		parameterMappings.put("gender", "${gender}");
+		parameterMappings.put("minAge", "${minAge}");
+		parameterMappings.put("maxAge", "${maxAge}");
 		rd.addDataSetDefinition(getName(), sqlDsd, parameterMappings);
-		
 		return rd;
 	}
 	
 	@Override
 	public List<ReportDesign> constructReportDesigns(ReportDefinition reportDefinition) {
-		ReportDesign reportDesign = ReportManagerUtil.createCsvReportDesign("7975c2c9-5055-42c3-8d90-fa7bcce79361",
+		ReportDesign reportDesign = ReportManagerUtil.createCsvReportDesign("8d0af26d-3a1b-4a3f-a2ca-22c9419af0b7",
 		    reportDefinition);
 		return Arrays.asList(reportDesign);
 	}
